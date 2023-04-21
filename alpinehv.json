@@ -1,61 +1,61 @@
 {
-    "builders": [
-        {
-            "type": "hyperv-iso",
-            "use_fixed_vhd_format": true,
-            "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v3.17/releases/x86_64/alpine-virt-3.17.3-x86_64.iso",
-            "iso_checksum": "3ae1f6304346ce99e5eafddf0132c86c0fc7136ffad767a2c725501d8a9d5c04",
-            "iso_checksum_type": "sha256",
-            "disk_size": "512",
-            "skip_compaction": "true",
-            "communicator": "ssh",
-            "ssh_username": "root",
-            "ssh_password": "alpine",
-            "http_directory": "http",
-            "http_port_min": "8080",
-            "http_port_max": "8080",
-            "switch_name": "Default Switch",
-            "boot_wait": "10s",
-            "boot_command": [
-                "root<enter><wait>",
-                "ifconfig eth0 up && udhcpc -i eth0<enter><wait10>",
-                "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>",
-                "setup-alpine -f answers<enter><wait5>",
-                "alpine<enter><wait>",
-                "alpine<enter><wait>",
-                "<wait10><wait10><wait10>",
-                "y<enter>",
-                "<wait10><wait10><wait10>",
-                "<wait10><wait10><wait10>",
-                "rc-service sshd stop<enter>",
-                "mount /dev/sda3 /mnt<enter>",
-                "echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>",
-                "umount /mnt<enter>",
-                "eject -s /dev/cdrom<enter>",
-                "reboot<enter>",
-                "<wait10><wait10><wait10>",
-                "root<enter><wait>",
-                "alpine<enter><wait>",
-                "apk add hvtools<enter><wait>",
-                "rc-update add hv_fcopy_daemon default<enter><wait>",
-                "rc-update add hv_kvp_daemon default<enter><wait>",
-                "rc-update add hv_vss_daemon default<enter><wait>",
-                "reboot<enter>"
-            ],
-            "shutdown_command": "poweroff",
-            "generation": 1,
-            "enable_secure_boot": false
-        }
-    ],
-    "provisioners": [
-        {
-            "type": "file",
-            "source": "useradd.sh",
-            "destination": "/tmp/useradd.sh"
-        },
-        {
-            "type": "shell",
-            "script": "provision.sh"
-        }
-    ]
+  "builders": [
+    {
+      "boot_command": [
+        "root<enter><wait>",
+        "ifconfig eth0 up \u0026\u0026 udhcpc -i eth0<enter><wait10>",
+        "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>",
+        "setup-alpine -f answers<enter><wait5>",
+        "alpine<enter><wait>",
+        "alpine<enter><wait>",
+        "<wait10><wait10><wait10>",
+        "y<enter>",
+        "<wait10><wait10><wait10>",
+        "<wait10><wait10><wait10>",
+        "rc-service sshd stop<enter>",
+        "mount /dev/sda3 /mnt<enter>",
+        "echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>",
+        "umount /mnt<enter>",
+        "eject -s /dev/cdrom<enter>",
+        "reboot<enter>",
+        "<wait10><wait10><wait10>",
+        "root<enter><wait>",
+        "alpine<enter><wait>",
+        "apk add hvtools<enter><wait>",
+        "rc-update add hv_fcopy_daemon default<enter><wait>",
+        "rc-update add hv_kvp_daemon default<enter><wait>",
+        "rc-update add hv_vss_daemon default<enter><wait>",
+        "reboot<enter>"
+      ],
+      "boot_wait": "10s",
+      "communicator": "ssh",
+      "disk_size": "512",
+      "enable_secure_boot": false,
+      "generation": 1,
+      "http_directory": "http",
+      "http_port_max": "8080",
+      "http_port_min": "8080",
+      "iso_checksum": "sha256:3ae1f6304346ce99e5eafddf0132c86c0fc7136ffad767a2c725501d8a9d5c04",
+      "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v3.17/releases/x86_64/alpine-virt-3.17.3-x86_64.iso",
+      "shutdown_command": "poweroff",
+      "skip_compaction": "true",
+      "ssh_password": "alpine",
+      "ssh_username": "root",
+      "switch_name": "Default Switch",
+      "type": "hyperv-iso",
+      "use_fixed_vhd_format": true
+    }
+  ],
+  "provisioners": [
+    {
+      "destination": "/tmp/useradd.sh",
+      "source": "useradd.sh",
+      "type": "file"
+    },
+    {
+      "script": "provision.sh",
+      "type": "shell"
+    }
+  ]
 }
+
