@@ -1,19 +1,21 @@
 # Community package required for shadow
-echo "http://dl-cdn.alpinelinux.org/alpine/v3.6/community" >> /etc/apk/repositories
+echo "http://dl-cdn.alpinelinux.org/alpine/v3.17/community" >> /etc/apk/repositories
 
 apk update && apk upgrade
 
 # Pre-reqs for WALinuxAgent
-apk add openssl sudo bash shadow parted iptables sfdisk
-apk add python py-setuptools
+apk add openssl sudo bash shadow parted iptables sfdisk kmod
+apk add python3 py-setuptools py3-setuptools
+python3 -m ensurepip
+python3 -m pip install distro
 
 # Install WALinuxAgent
-wget https://github.com/Azure/WALinuxAgent/archive/v2.2.19.tar.gz && \
-tar xvzf v2.2.19.tar.gz && \
-cd WALinuxAgent-2.2.19 && \
-python setup.py install && \
+wget https://github.com/Azure/WALinuxAgent/archive/v2.9.0.4.tar.gz && \
+tar xvzf v2.9.0.4.tar.gz && \
+cd WALinuxAgent-2.9.0.4 && \
+python3 setup.py install && \
 cd .. && \
-rm -rf WALinuxAgent-2.2.19 v2.2.19.tar.gz
+rm -rf WALinuxAgent-2.9.0.4 v2.9.0.4.tar.gz
 
 # Update boot params
 sed -i 's/^default_kernel_opts="[^"]*/\0 console=ttyS0 earlyprintk=ttyS0 rootdelay=300/' /etc/update-extlinux.conf
@@ -24,14 +26,26 @@ sed -i 's/^#ClientAliveInterval 0/ClientAliveInterval 180/' /etc/ssh/sshd_config
 
 # Start waagent at boot
 cat > /etc/init.d/waagent <<EOF
-#!/sbin/openrc-run                                                                 
+#!/sbin/openrc-run
 
-export PATH=/usr/local/sbin:$PATH
+export PATH=/usr/local/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-start() {                                                                          
-        ebegin "Starting waagent"                                                  
-        start-stop-daemon --start --exec /usr/sbin/waagent --name waagent -- -start
-        eend $? "Failed to start waagent"                                          
+. /etc/init.d/functions.sh
+
+name=$RC_SVCNAME
+command="/usr/sbin/waagent"
+command_args="-daemon"
+pidfile="/run/$RC_SVCNAME/$RC_SVCNAME.pid"
+start_stop_daemon_args=""
+command_background="yes"
+
+depend() {
+        need net
+}
+
+start_pre() {
+        checkpath --directory --owner $command_user:$command_user --mode 0775 \
+                /run/$RC_SVCNAME /var/log/$RC_SVCNAME
 }
 EOF
 
@@ -47,3 +61,4 @@ rc-update add waagent default
 mkdir -p /usr/local/sbin
 mv /tmp/useradd.sh /usr/local/sbin/useradd
 chmod +x /usr/local/sbin/useradd
+waagent -force -deprovision
